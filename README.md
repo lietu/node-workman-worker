@@ -74,7 +74,7 @@ Here's a simple example:
 const worker = require('node-workman-worker').worker;
 
 async function work(options) {
-	return options.a + options.b
+    return options.a + options.b
 }
 
 worker.registerTask("work", work)
