@@ -1,8 +1,9 @@
 {
     "name": "node-workman-worker",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "Worker library for node-workman",
-    "main": "dist/index.js",
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
     "repository": "https://github.com/lietu/node-workman-worker",
     "author": "Janne \"Lietu\" Enberg",
     "license": "MIT",
