@@ -1,0 +1,7 @@
+src/
+node_modules/
+.editorconfig
+nodemon.json
+setup-jest.js
+tsconfig.json
+dist/test-*
