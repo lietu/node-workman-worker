@@ -62,6 +62,29 @@ That's it. Nothing more required. Simple, right?
 You can check the full example [src/test-worker.ts](src/test-worker.ts)
 
 
+## Well how about JavaScript
+
+Fine, this was written in TypeScript but nothing is stopping you from using
+plain JavaScript as long as you can live with the fact that I'm probably
+disgusted with you.
+
+Here's a simple example:
+
+```javascript
+const worker = require('node-workman-worker').worker;
+
+async function work(options) {
+	return options.a + options.b
+}
+
+worker.registerTask("work", work)
+
+worker.run({
+    server: "ws://localhost:9999/worker"
+})
+```
+
+
 ## Contributing
 
 Pull requests and issues are open for any good ideas, but please keep in mind
