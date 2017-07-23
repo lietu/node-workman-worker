@@ -1,45 +1,75 @@
-import * as http from 'http'
+import * as WebSocket from 'ws'
 
-let openRequests = 0
+class Client {
+    connected: boolean = false
+    private waitingNonce: string = ""
+    private _server: string
+    private _ws: WebSocket
+
+    constructor(server: string) {
+        this._server = server
+        this._connect()
+    }
+
+    send() {
+        if (this.connected && this.waitingNonce === "") {
+            this.waitingNonce = (Date.now() + Math.random()).toString(16)
+            const req = JSON.stringify({
+                action: "RunTask",
+                nonce: this.waitingNonce,
+                name: "work",
+                options: {
+                    a: Math.random(),
+                    b: Math.random()
+                }
+            })
+            this._ws.send(req)
+        }
+    }
+
+    private _connect() {
+        this._ws = new WebSocket(this._server)
+        this._ws.on("open", this._onOpen.bind(this))
+        this._ws.on("error", this._onError.bind(this))
+        this._ws.on("close", this._onClose.bind(this))
+        this._ws.on("message", this._onMessage.bind(this))
+    }
+
+    private _onMessage(data: string) {
+        const pkg: any = JSON.parse(data)
+        if (pkg.nonce === this.waitingNonce) {
+            this.waitingNonce = ""
+            completedRequests += 1
+        }
+    }
+
+    private _onOpen() {
+        this.connected = true
+        this.waitingNonce = ""
+    }
+
+    private _onError(e: Error) {
+        console.warn(`WebSocket error ${e.toString()}`)
+    }
+
+    private _onClose() {
+        this.connected = false
+        this._connect()
+    }
+}
+
 let completedRequests = 0
 let lastRequestCount = 0
 let lastTime = Date.now()
+let clients: Client[] = []
 
-async function sendRequest(): Promise<void> {
-    return new Promise<void>(function (resolve: { (): void }) {
-        const a = Math.random()
-        const b = Math.random()
-        const data = JSON.stringify({
-            a: a,
-            b: b
-        })
-
-        openRequests += 1
-        const request = http.request({
-            port: 9999,
-            hostname: "127.0.0.1",
-            method: "POST",
-            path: "/task/work",
-        }, function (res: any) {
-            res.setEncoding('utf8')
-            res.on("data", function() {
-                // Throw away
-            })
-            res.on("end", function () {
-                openRequests -= 1
-                completedRequests += 1
-                resolve()
-            })
-        })
-
-        request.write(data)
-        request.end()
-    })
+for (let i = 0; i < 20; i += 1) {
+    clients.push(new Client("ws://localhost:9999/websocket"))
 }
 
 function generateWork() {
-    while (openRequests < 10) {
-        sendRequest()
+    for (let client of clients) {
+        client.send()
     }
 }
 
